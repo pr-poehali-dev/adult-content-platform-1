@@ -65,6 +65,65 @@ const IndexContent = () => {
     },
   });
 
+  const loginYandex = () => {
+    const clientId = 'YOUR_YANDEX_CLIENT_ID';
+    const redirectUri = encodeURIComponent(window.location.origin + '/yandex-callback');
+    const yandexAuthUrl = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
+    
+    const width = 500;
+    const height = 600;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    
+    const popup = window.open(
+      yandexAuthUrl,
+      'Yandex Login',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    const messageHandler = async (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data.type === 'YANDEX_AUTH_CODE') {
+        try {
+          const authResponse = await fetch('https://functions.poehali.dev/d25137a4-fa31-4ec7-bd38-5439950b9e3a', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code: event.data.code,
+              redirect_uri: window.location.origin + '/yandex-callback'
+            }),
+          });
+
+          const userData = await authResponse.json();
+          
+          if (authResponse.ok) {
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+            setShowLogin(false);
+            toast({
+              title: 'Добро пожаловать!',
+              description: `Вы вошли как ${userData.name}`,
+            });
+          } else {
+            throw new Error(userData.message || 'Auth failed');
+          }
+        } catch (error) {
+          toast({
+            title: 'Ошибка входа',
+            description: 'Не удалось войти через Яндекс',
+            variant: 'destructive',
+          });
+        }
+        
+        window.removeEventListener('message', messageHandler);
+        if (popup) popup.close();
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
@@ -651,6 +710,17 @@ const IndexContent = () => {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                   Войти через Google
+                </Button>
+
+                <Button 
+                  className="w-full bg-black hover:bg-gray-900 text-white"
+                  size="lg"
+                  onClick={loginYandex}
+                >
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm3.9 16.5h-2.5l-3.4-5.5v5.5H7.5V7.5h2.5l3.4 5.5V7.5h2.5v9z"/>
+                  </svg>
+                  Войти через Яндекс
                 </Button>
 
                 <div className="text-center text-xs text-muted-foreground">

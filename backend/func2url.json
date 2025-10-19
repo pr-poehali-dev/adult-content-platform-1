@@ -1,4 +1,5 @@
 {
+  "yandex-auth": "https://functions.poehali.dev/d25137a4-fa31-4ec7-bd38-5439950b9e3a",
   "google-auth": "https://functions.poehali.dev/b0db3f19-a754-4433-b11a-f3ad966cc6a5",
   "sbp-payment": "https://functions.poehali.dev/a8e2dea6-bbf6-4ec4-8575-34146fdf076b"
 }
