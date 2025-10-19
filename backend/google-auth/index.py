@@ -14,6 +14,10 @@ class GoogleTokenRequest(BaseModel):
     picture: str
     google_id: str
 
+class UpdateRoleRequest(BaseModel):
+    user_id: int
+    role: str = Field(..., pattern='^(viewer|creator)$')
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Business: Authenticate users with Google OAuth and store in database
@@ -27,26 +31,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
         }
     
-    if method != 'POST':
-        return {
-            'statusCode': 405,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'isBase64Encoded': False,
-            'body': json.dumps({'error': 'Method not allowed'})
-        }
-    
     database_url = os.environ.get('DATABASE_URL', '')
-    google_client_id = os.environ.get('GOOGLE_CLIENT_ID', '')
     
     if not database_url:
         return {
@@ -59,6 +51,60 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'body': json.dumps({'error': 'Database not configured'})
         }
     
+    if method == 'PUT':
+        body_data = json.loads(event.get('body', '{}'))
+        role_data = UpdateRoleRequest(**body_data)
+        
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            f"UPDATE t_p71282790_adult_content_platfo.users SET role = '{role_data.role}' WHERE id = {role_data.user_id} RETURNING id, email, name, avatar_url, role"
+        )
+        result = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        if result:
+            user_id, email, name, avatar_url, role = result
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({
+                    'id': user_id,
+                    'email': email,
+                    'name': name,
+                    'avatar_url': avatar_url,
+                    'role': role
+                })
+            }
+        else:
+            return {
+                'statusCode': 404,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({'error': 'User not found'})
+            }
+    
+    if method != 'POST':
+        return {
+            'statusCode': 405,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': 'Method not allowed'})
+        }
+    
     body_data = json.loads(event.get('body', '{}'))
     auth_data = GoogleTokenRequest(**body_data)
     
@@ -66,14 +112,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cursor = conn.cursor()
     
     cursor.execute(
-        "SELECT id, email, name, avatar_url, created_at FROM users WHERE google_id = '" + auth_data.google_id.replace("'", "''") + "'"
+        "SELECT id, email, name, avatar_url, created_at, role FROM t_p71282790_adult_content_platfo.users WHERE google_id = '" + auth_data.google_id.replace("'", "''") + "'"
     )
     user = cursor.fetchone()
     
     if user:
-        user_id, email, name, avatar_url, created_at = user
+        user_id, email, name, avatar_url, created_at, role = user
         cursor.execute(
-            "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = " + str(user_id)
+            "UPDATE t_p71282790_adult_content_platfo.users SET last_login = CURRENT_TIMESTAMP WHERE id = " + str(user_id)
         )
         conn.commit()
     else:
@@ -83,14 +129,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         safe_picture = auth_data.picture.replace("'", "''")
         
         cursor.execute(
-            f"INSERT INTO users (google_id, email, name, avatar_url) VALUES ('{safe_google_id}', '{safe_email}', '{safe_name}', '{safe_picture}') RETURNING id, email, name, avatar_url, created_at"
+            f"INSERT INTO t_p71282790_adult_content_platfo.users (google_id, email, name, avatar_url) VALUES ('{safe_google_id}', '{safe_email}', '{safe_name}', '{safe_picture}') RETURNING id, email, name, avatar_url, created_at, role"
         )
         result = cursor.fetchone()
-        user_id, email, name, avatar_url, created_at = result
+        user_id, email, name, avatar_url, created_at, role = result
         conn.commit()
     
     cursor.execute(
-        f"SELECT plan_name, expires_at, status FROM subscriptions WHERE user_id = {user_id} AND status = 'active' AND expires_at > CURRENT_TIMESTAMP ORDER BY expires_at DESC LIMIT 1"
+        f"SELECT plan_name, expires_at, status FROM t_p71282790_adult_content_platfo.subscriptions WHERE user_id = {user_id} AND status = 'active' AND expires_at > CURRENT_TIMESTAMP ORDER BY expires_at DESC LIMIT 1"
     )
     subscription = cursor.fetchone()
     
@@ -106,10 +152,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     jwt_token = jwt.encode(token_payload, jwt_secret, algorithm='HS256')
     
     user_data = {
+        'id': user_id,
         'user_id': user_id,
         'email': email,
         'name': name,
         'avatar_url': avatar_url,
+        'role': role,
         'token': jwt_token,
         'subscription': None
     }

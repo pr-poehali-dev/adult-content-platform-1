@@ -111,14 +111,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     safe_yandex_id = str(yandex_id).replace("'", "''")
     
     cursor.execute(
-        f"SELECT id, email, name, avatar_url, created_at FROM users WHERE google_id = '{safe_yandex_id}'"
+        f"SELECT id, email, name, avatar_url, created_at, role FROM t_p71282790_adult_content_platfo.users WHERE google_id = '{safe_yandex_id}'"
     )
     user = cursor.fetchone()
     
     if user:
-        user_id, email_db, name_db, avatar_url_db, created_at = user
+        user_id, email_db, name_db, avatar_url_db, created_at, role = user
         cursor.execute(
-            f"UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = {user_id}"
+            f"UPDATE t_p71282790_adult_content_platfo.users SET last_login = CURRENT_TIMESTAMP WHERE id = {user_id}"
         )
         conn.commit()
     else:
@@ -127,14 +127,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         safe_avatar = avatar_url.replace("'", "''")
         
         cursor.execute(
-            f"INSERT INTO users (google_id, email, name, avatar_url) VALUES ('{safe_yandex_id}', '{safe_email}', '{safe_name}', '{safe_avatar}') RETURNING id, email, name, avatar_url, created_at"
+            f"INSERT INTO t_p71282790_adult_content_platfo.users (google_id, email, name, avatar_url) VALUES ('{safe_yandex_id}', '{safe_email}', '{safe_name}', '{safe_avatar}') RETURNING id, email, name, avatar_url, created_at, role"
         )
         result = cursor.fetchone()
-        user_id, email, name, avatar_url, created_at = result
+        user_id, email, name, avatar_url, created_at, role = result
         conn.commit()
     
     cursor.execute(
-        f"SELECT plan_name, expires_at, status FROM subscriptions WHERE user_id = {user_id} AND status = 'active' AND expires_at > CURRENT_TIMESTAMP ORDER BY expires_at DESC LIMIT 1"
+        f"SELECT plan_name, expires_at, status FROM t_p71282790_adult_content_platfo.subscriptions WHERE user_id = {user_id} AND status = 'active' AND expires_at > CURRENT_TIMESTAMP ORDER BY expires_at DESC LIMIT 1"
     )
     subscription = cursor.fetchone()
     
@@ -150,10 +150,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     jwt_token = jwt.encode(token_payload, jwt_secret, algorithm='HS256')
     
     user_data = {
+        'id': user_id,
         'user_id': user_id,
         'email': email,
         'name': name,
         'avatar_url': avatar_url,
+        'role': role,
         'token': jwt_token,
         'subscription': None
     }

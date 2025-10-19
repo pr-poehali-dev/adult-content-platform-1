@@ -13,6 +13,7 @@
       },
       "expectedStatus": 200,
       "expectedBody": {
+        "id": "number",
         "user_id": "number",
         "email": "string",
         "token": "string"

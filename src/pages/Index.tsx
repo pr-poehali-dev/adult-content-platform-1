@@ -18,6 +18,7 @@ const IndexContent = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [showRoleSelection, setShowRoleSelection] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -48,13 +49,21 @@ const IndexContent = () => {
         });
 
         const userData = await authResponse.json();
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        setShowLogin(false);
-        toast({
-          title: 'Добро пожаловать!',
-          description: `Вы вошли как ${userData.name}`,
-        });
+        
+        if (!userData.role) {
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          setShowLogin(false);
+          setShowRoleSelection(true);
+        } else {
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          setShowLogin(false);
+          toast({
+            title: 'Добро пожаловать!',
+            description: `Вы вошли как ${userData.name}`,
+          });
+        }
       } catch (error) {
         toast({
           title: 'Ошибка входа',
@@ -98,13 +107,20 @@ const IndexContent = () => {
           const userData = await authResponse.json();
           
           if (authResponse.ok) {
-            setUser(userData);
-            localStorage.setItem('user', JSON.stringify(userData));
-            setShowLogin(false);
-            toast({
-              title: 'Добро пожаловать!',
-              description: `Вы вошли как ${userData.name}`,
-            });
+            if (!userData.role) {
+              setUser(userData);
+              localStorage.setItem('user', JSON.stringify(userData));
+              setShowLogin(false);
+              setShowRoleSelection(true);
+            } else {
+              setUser(userData);
+              localStorage.setItem('user', JSON.stringify(userData));
+              setShowLogin(false);
+              toast({
+                title: 'Добро пожаловать!',
+                description: `Вы вошли как ${userData.name}`,
+              });
+            }
           } else {
             throw new Error(userData.message || 'Auth failed');
           }
@@ -725,6 +741,134 @@ const IndexContent = () => {
 
                 <div className="text-center text-xs text-muted-foreground">
                   Нажимая "Войти", вы принимаете условия использования и политику конфиденциальности
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {showRoleSelection && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <Card className="glass-effect max-w-2xl w-full border-gold/30">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-serif">Добро пожаловать в Élite!</CardTitle>
+                <CardDescription className="text-base mt-2">
+                  Выберите, как вы хотите использовать платформу
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="cursor-pointer hover:border-gold transition-all hover:shadow-lg group" onClick={async () => {
+                    try {
+                      const response = await fetch('https://functions.poehali.dev/b0db3f19-a754-4433-b11a-f3ad966cc6a5', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          user_id: user.id,
+                          role: 'viewer'
+                        })
+                      });
+
+                      if (response.ok) {
+                        const updatedUser = { ...user, role: 'viewer' };
+                        setUser(updatedUser);
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                        setShowRoleSelection(false);
+                        toast({
+                          title: 'Добро пожаловать!',
+                          description: 'Вы можете смотреть эксклюзивный контент',
+                        });
+                      }
+                    } catch (error) {
+                      toast({
+                        title: 'Ошибка',
+                        description: 'Не удалось сохранить выбор',
+                        variant: 'destructive',
+                      });
+                    }
+                  }}>
+                    <CardHeader>
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-primary/20 transition-colors">
+                        <Icon name="Eye" size={32} className="text-primary" />
+                      </div>
+                      <CardTitle className="text-center text-xl">Я зритель</CardTitle>
+                      <CardDescription className="text-center">
+                        Хочу смотреть эксклюзивный контент от создателей
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Icon name="Check" size={16} className="text-gold mt-0.5 shrink-0" />
+                        <span>Доступ к галерее контента</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Icon name="Check" size={16} className="text-gold mt-0.5 shrink-0" />
+                        <span>Подписки на создателей</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Icon name="Check" size={16} className="text-gold mt-0.5 shrink-0" />
+                        <span>Эксклюзивные материалы</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="cursor-pointer hover:border-gold transition-all hover:shadow-lg group" onClick={async () => {
+                    try {
+                      const response = await fetch('https://functions.poehali.dev/b0db3f19-a754-4433-b11a-f3ad966cc6a5', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          user_id: user.id,
+                          role: 'creator'
+                        })
+                      });
+
+                      if (response.ok) {
+                        const updatedUser = { ...user, role: 'creator' };
+                        setUser(updatedUser);
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                        setShowRoleSelection(false);
+                        toast({
+                          title: 'Поздравляем!',
+                          description: 'Вы можете начать публиковать свой контент',
+                        });
+                      }
+                    } catch (error) {
+                      toast({
+                        title: 'Ошибка',
+                        description: 'Не удалось сохранить выбор',
+                        variant: 'destructive',
+                      });
+                    }
+                  }}>
+                    <CardHeader>
+                      <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-gold/20 transition-colors">
+                        <Icon name="Upload" size={32} className="text-gold" />
+                      </div>
+                      <CardTitle className="text-center text-xl">Я создатель</CardTitle>
+                      <CardDescription className="text-center">
+                        Хочу публиковать свой контент и зарабатывать
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Icon name="Check" size={16} className="text-gold mt-0.5 shrink-0" />
+                        <span>Загрузка контента</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Icon name="Check" size={16} className="text-gold mt-0.5 shrink-0" />
+                        <span>Монетизация подписок</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Icon name="Check" size={16} className="text-gold mt-0.5 shrink-0" />
+                        <span>Аналитика и статистика</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-6 text-center text-sm text-muted-foreground">
+                  Вы сможете изменить роль позже в настройках профиля
                 </div>
               </CardContent>
             </Card>
