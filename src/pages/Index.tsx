@@ -1,12 +1,480 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import Icon from '@/components/ui/icon';
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const subscriptionPlans = [
+    {
+      name: 'Silver',
+      price: '990',
+      features: ['Базовый доступ к контенту', 'HD качество', 'Базовая поддержка'],
+      color: 'platinum'
+    },
+    {
+      name: 'Gold',
+      price: '2990',
+      features: ['Полный доступ к контенту', '4K качество', 'Приоритетная поддержка', 'Эксклюзивные материалы'],
+      color: 'gold',
+      popular: true
+    },
+    {
+      name: 'Platinum',
+      price: '5990',
+      features: ['Безлимитный доступ', '8K качество', 'VIP поддержка 24/7', 'Ранний доступ', 'Персональные рекомендации'],
+      color: 'primary'
+    }
+  ];
+
+  const creators = [
+    { name: 'Anastasia K.', subscribers: '125K', avatar: '👑', verified: true },
+    { name: 'Victoria M.', subscribers: '98K', avatar: '💎', verified: true },
+    { name: 'Elena S.', subscribers: '87K', avatar: '⭐', verified: true },
+    { name: 'Maria L.', subscribers: '76K', avatar: '🌟', verified: false }
+  ];
+
+  const galleryItems = [
+    { id: 1, title: 'Exclusive Set #1', views: '45K', locked: false, premium: true },
+    { id: 2, title: 'Premium Collection', views: '38K', locked: true, premium: true },
+    { id: 3, title: 'Elite Series', views: '52K', locked: false, premium: true },
+    { id: 4, title: 'VIP Content', views: '61K', locked: true, premium: true }
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <nav className="glass-effect sticky top-0 z-50 border-b border-border">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 className="text-3xl font-serif font-bold bg-gradient-to-r from-gold to-primary bg-clip-text text-transparent">
+            Élite
+          </h1>
+          
+          <div className="hidden md:flex items-center gap-6">
+            <Button variant="ghost" onClick={() => setActiveTab('home')} className="text-foreground hover:text-primary">
+              <Icon name="Home" size={18} className="mr-2" />
+              Главная
+            </Button>
+            <Button variant="ghost" onClick={() => setActiveTab('gallery')} className="text-foreground hover:text-primary">
+              <Icon name="Image" size={18} className="mr-2" />
+              Галерея
+            </Button>
+            <Button variant="ghost" onClick={() => setActiveTab('creators')} className="text-foreground hover:text-primary">
+              <Icon name="Users" size={18} className="mr-2" />
+              Профили
+            </Button>
+            <Button variant="ghost" onClick={() => setActiveTab('subscriptions')} className="text-foreground hover:text-primary">
+              <Icon name="Crown" size={18} className="mr-2" />
+              Подписки
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => setActiveTab('search')} size="icon">
+              <Icon name="Search" size={20} />
+            </Button>
+            <Button variant="ghost" onClick={() => setActiveTab('settings')} size="icon">
+              <Icon name="Settings" size={20} />
+            </Button>
+            <Button className="bg-gold hover:bg-gold/90 text-background font-medium">
+              Войти
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      <main className="container mx-auto px-4 py-8">
+        {activeTab === 'home' && (
+          <div className="space-y-12 animate-fade-in">
+            <section className="relative overflow-hidden rounded-2xl premium-gradient p-12 md:p-20 text-center">
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold rounded-full blur-3xl"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
+              </div>
+              
+              <div className="relative z-10">
+                <Badge className="mb-4 bg-gold/20 text-gold border-gold/30">Премиум платформа</Badge>
+                <h2 className="text-5xl md:text-7xl font-serif font-bold mb-6 bg-gradient-to-r from-gold via-platinum to-primary bg-clip-text text-transparent">
+                  Эксклюзивный контент
+                </h2>
+                <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  Присоединяйтесь к элитному сообществу создателей и ценителей уникального контента
+                </p>
+                <div className="flex gap-4 justify-center flex-wrap">
+                  <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-semibold text-lg px-8">
+                    <Icon name="Sparkles" size={20} className="mr-2" />
+                    Начать
+                  </Button>
+                  <Button size="lg" variant="outline" className="border-gold text-gold hover:bg-gold/10 text-lg px-8">
+                    Узнать больше
+                  </Button>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-3xl font-serif font-bold">Топ создателей</h3>
+                <Button variant="ghost" className="text-primary">
+                  Все <Icon name="ArrowRight" size={18} className="ml-2" />
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {creators.map((creator, idx) => (
+                  <Card key={idx} className="glass-effect hover:border-gold/30 transition-all cursor-pointer group">
+                    <CardContent className="pt-6">
+                      <div className="text-center">
+                        <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">{creator.avatar}</div>
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <h4 className="font-semibold text-lg">{creator.name}</h4>
+                          {creator.verified && <Icon name="BadgeCheck" size={18} className="text-gold" />}
+                        </div>
+                        <p className="text-muted-foreground text-sm">{creator.subscribers} подписчиков</p>
+                        <Button className="w-full mt-4 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30">
+                          Подписаться
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            <section className="glass-effect p-8 rounded-2xl">
+              <div className="text-center max-w-3xl mx-auto">
+                <Icon name="Shield" size={48} className="mx-auto mb-4 text-gold" />
+                <h3 className="text-2xl font-serif font-bold mb-4">Максимальная конфиденциальность</h3>
+                <p className="text-muted-foreground mb-6">
+                  Мы используем современное шифрование и передовые технологии защиты данных. 
+                  Ваш контент и личная информация находятся под надёжной защитой.
+                </p>
+                <div className="flex gap-8 justify-center flex-wrap">
+                  <div className="text-center">
+                    <Icon name="Lock" size={32} className="mx-auto mb-2 text-primary" />
+                    <p className="text-sm font-medium">End-to-end шифрование</p>
+                  </div>
+                  <div className="text-center">
+                    <Icon name="Eye" size={32} className="mx-auto mb-2 text-primary" />
+                    <p className="text-sm font-medium">Контроль приватности</p>
+                  </div>
+                  <div className="text-center">
+                    <Icon name="Server" size={32} className="mx-auto mb-2 text-primary" />
+                    <p className="text-sm font-medium">Защищённые сервера</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'gallery' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <h2 className="text-4xl font-serif font-bold">Галерея</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Icon name="Filter" size={16} className="mr-2" />
+                  Фильтры
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Icon name="SlidersHorizontal" size={16} className="mr-2" />
+                  Сортировка
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {galleryItems.map((item) => (
+                <Card key={item.id} className="group cursor-pointer overflow-hidden glass-effect hover:border-gold/30 transition-all">
+                  <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60"></div>
+                    {item.locked && (
+                      <div className="absolute inset-0 backdrop-blur-md flex items-center justify-center">
+                        <Icon name="Lock" size={48} className="text-gold" />
+                      </div>
+                    )}
+                    {item.premium && (
+                      <Badge className="absolute top-3 right-3 bg-gold text-background">
+                        <Icon name="Crown" size={14} className="mr-1" />
+                        Premium
+                      </Badge>
+                    )}
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <h4 className="font-semibold mb-1">{item.title}</h4>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Icon name="Eye" size={14} />
+                        <span>{item.views}</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'creators' && (
+          <div className="space-y-6 animate-fade-in">
+            <h2 className="text-4xl font-serif font-bold mb-8">Профили создателей</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {creators.map((creator, idx) => (
+                <Card key={idx} className="glass-effect hover:border-gold/30 transition-all">
+                  <CardHeader>
+                    <div className="flex items-start gap-4">
+                      <div className="text-5xl">{creator.avatar}</div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <CardTitle>{creator.name}</CardTitle>
+                          {creator.verified && <Icon name="BadgeCheck" size={20} className="text-gold" />}
+                        </div>
+                        <CardDescription>{creator.subscribers} подписчиков</CardDescription>
+                      </div>
+                      <Button size="sm" className="bg-gold hover:bg-gold/90 text-background">
+                        Подписаться
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Эксклюзивный премиум контент. Регулярные обновления и персональное общение с подписчиками.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1">
+                        <Icon name="MessageCircle" size={16} className="mr-2" />
+                        Сообщение
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex-1">
+                        <Icon name="Gift" size={16} className="mr-2" />
+                        Поддержать
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'subscriptions' && (
+          <div className="space-y-8 animate-fade-in">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">Выберите подписку</h2>
+              <p className="text-muted-foreground text-lg">
+                Получите доступ к эксклюзивному контенту премиум-качества
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              {subscriptionPlans.map((plan, idx) => (
+                <Card 
+                  key={idx} 
+                  className={`relative overflow-hidden ${plan.popular ? 'border-gold shadow-lg shadow-gold/20 scale-105' : 'glass-effect'}`}
+                >
+                  {plan.popular && (
+                    <div className="absolute top-0 right-0 bg-gold text-background px-4 py-1 text-sm font-semibold">
+                      Популярный
+                    </div>
+                  )}
+                  <CardHeader className="text-center pb-8 pt-8">
+                    <CardTitle className="text-2xl font-serif mb-2">{plan.name}</CardTitle>
+                    <div className="text-4xl font-bold font-serif mb-2">
+                      <span className="text-gold">{plan.price}</span>
+                      <span className="text-lg text-muted-foreground font-normal"> ₽/мес</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3 mb-6">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Icon name="Check" size={20} className="text-gold mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button 
+                      className={`w-full ${plan.popular ? 'bg-gold hover:bg-gold/90 text-background' : 'bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30'}`}
+                      size="lg"
+                    >
+                      Выбрать план
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'search' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-4xl font-serif font-bold mb-6 text-center">Поиск</h2>
+              <div className="relative">
+                <Icon name="Search" size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Найти создателей, контент..."
+                  className="pl-12 h-14 text-lg glass-effect border-gold/20 focus:border-gold"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="mt-8 space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">Популярные запросы</h3>
+                <div className="flex flex-wrap gap-2">
+                  {['Фотосеты', 'Видео', 'Эксклюзив', '4K', 'Новинки'].map((tag) => (
+                    <Badge key={tag} variant="outline" className="cursor-pointer hover:bg-gold/10 hover:border-gold">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+            <h2 className="text-4xl font-serif font-bold mb-8">Настройки</h2>
+
+            <Card className="glass-effect">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icon name="Shield" size={24} className="text-gold" />
+                  Приватность и безопасность
+                </CardTitle>
+                <CardDescription>
+                  Управляйте видимостью вашего контента и данными
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="private-profile" className="text-base font-medium">Приватный профиль</Label>
+                    <p className="text-sm text-muted-foreground">Только подписчики видят ваш контент</p>
+                  </div>
+                  <Switch id="private-profile" />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="watermark" className="text-base font-medium">Водяные знаки</Label>
+                    <p className="text-sm text-muted-foreground">Автоматическая защита контента</p>
+                  </div>
+                  <Switch id="watermark" defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="download-protect" className="text-base font-medium">Защита от скачивания</Label>
+                    <p className="text-sm text-muted-foreground">Запретить сохранение контента</p>
+                  </div>
+                  <Switch id="download-protect" defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="geo-block" className="text-base font-medium">Географические ограничения</Label>
+                    <p className="text-sm text-muted-foreground">Ограничить доступ по регионам</p>
+                  </div>
+                  <Switch id="geo-block" />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="two-factor" className="text-base font-medium">Двухфакторная аутентификация</Label>
+                    <p className="text-sm text-muted-foreground">Дополнительная защита аккаунта</p>
+                  </div>
+                  <Switch id="two-factor" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-effect">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icon name="Bell" size={24} className="text-gold" />
+                  Уведомления
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-subscribers" className="text-base font-medium">Новые подписчики</Label>
+                    <p className="text-sm text-muted-foreground">Уведомления о новых подписках</p>
+                  </div>
+                  <Switch id="new-subscribers" defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="messages" className="text-base font-medium">Сообщения</Label>
+                    <p className="text-sm text-muted-foreground">Уведомления о новых сообщениях</p>
+                  </div>
+                  <Switch id="messages" defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="tips" className="text-base font-medium">Донаты</Label>
+                    <p className="text-sm text-muted-foreground">Уведомления о поддержке</p>
+                  </div>
+                  <Switch id="tips" defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </main>
+
+      <footer className="mt-20 border-t border-border">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-2xl font-serif font-bold bg-gradient-to-r from-gold to-primary bg-clip-text text-transparent mb-4">
+                Élite
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Премиум платформа для эксклюзивного контента
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Платформа</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">О нас</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Блог</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Карьера</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Поддержка</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Помощь</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Безопасность</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Правила</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Юридическая информация</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Условия использования</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Конфиденциальность</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Cookie</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+            <p>© 2024 Élite. Все права защищены.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
