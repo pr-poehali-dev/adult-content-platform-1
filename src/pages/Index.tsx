@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,10 @@ import Icon from '@/components/ui/icon';
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
 
   const subscriptionPlans = [
     {
@@ -301,6 +306,7 @@ const Index = () => {
                     <Button 
                       className={`w-full ${plan.popular ? 'bg-gold hover:bg-gold/90 text-background' : 'bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30'}`}
                       size="lg"
+                      onClick={() => setSelectedPlan(plan)}
                     >
                       Выбрать план
                     </Button>
@@ -427,6 +433,125 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground">Уведомления о поддержке</p>
                   </div>
                   <Switch id="tips" defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {selectedPlan && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <Card className="glass-effect max-w-md w-full border-gold/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl font-serif">Оплата подписки</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedPlan(null)}>
+                    <Icon name="X" size={20} />
+                  </Button>
+                </div>
+                <CardDescription>
+                  План {selectedPlan.name} — {selectedPlan.price} ₽/мес
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Номер телефона для СБП</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+7 999 123 45 67"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="glass-effect border-gold/20"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    На этот номер придёт запрос на оплату через СБП
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Подписка {selectedPlan.name}</span>
+                    <span>{selectedPlan.price} ₽</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Срок действия</span>
+                    <span>1 месяц</span>
+                  </div>
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="flex items-center justify-between font-semibold">
+                      <span>Итого</span>
+                      <span className="text-gold text-lg">{selectedPlan.price} ₽</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full bg-gold hover:bg-gold/90 text-background"
+                  size="lg"
+                  disabled={!phoneNumber || isProcessing}
+                  onClick={async () => {
+                    setIsProcessing(true);
+                    try {
+                      const response = await fetch('https://functions.poehali.dev/a8e2dea6-bbf6-4ec4-8575-34146fdf076b', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          amount: parseInt(selectedPlan.price),
+                          description: `Подписка ${selectedPlan.name} на 1 месяц`,
+                          customer_phone: phoneNumber,
+                          plan_name: selectedPlan.name
+                        })
+                      });
+
+                      const data = await response.json();
+
+                      if (response.ok && data.payment_url) {
+                        toast({
+                          title: 'Платёж создан!',
+                          description: 'Откройте приложение банка для оплаты',
+                        });
+                        window.open(data.payment_url, '_blank');
+                        setTimeout(() => {
+                          setSelectedPlan(null);
+                          setPhoneNumber('');
+                        }, 2000);
+                      } else {
+                        toast({
+                          title: 'Ошибка',
+                          description: data.message || 'Не удалось создать платёж',
+                          variant: 'destructive',
+                        });
+                      }
+                    } catch (error) {
+                      toast({
+                        title: 'Ошибка сети',
+                        description: 'Проверьте подключение к интернету',
+                        variant: 'destructive',
+                      });
+                    } finally {
+                      setIsProcessing(false);
+                    }
+                  }}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                      Обработка...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Smartphone" size={20} className="mr-2" />
+                      Оплатить через СБП
+                    </>
+                  )}
+                </Button>
+
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Icon name="Shield" size={14} className="text-gold" />
+                  <span>Безопасная оплата через Систему Быстрых Платежей</span>
                 </div>
               </CardContent>
             </Card>

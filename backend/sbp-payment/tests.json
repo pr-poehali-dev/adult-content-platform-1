@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Create SBP payment",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "amount": 2990,
+        "description": "Подписка Gold на 1 месяц",
+        "customer_phone": "+79991234567",
+        "plan_name": "Gold"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "payment_id": "string",
+        "amount": 2990,
+        "payment_url": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get payment status",
+      "method": "GET",
+      "path": "/?payment_id=test-123",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "payment_id": "string",
+        "status": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
