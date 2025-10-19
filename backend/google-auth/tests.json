@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "Authenticate user with Google",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "token": "test-google-token",
+        "name": "Test User",
+        "email": "test@example.com",
+        "picture": "https://example.com/avatar.jpg",
+        "google_id": "123456789"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "user_id": "number",
+        "email": "string",
+        "token": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
